@@ -8,12 +8,12 @@ export class ImageController {
 
   @Get()
   async getHello(@Query() query, @Res() res): Promise<string> {
-    const {url, h: heightImage, w: widthImage} = query;
+    const {url, h: heightImage, w: widthImage, fit} = query;
     if (!url) {
       res.status(404).send('not found');
       return;
     }
-    const resultImage = await this.imageService.getOptimizeImage(url, heightImage || '', widthImage || '');
-    res.status(200).sendFile(resultImage);
+    const resultImage = await this.imageService.getOptimizeImage(url, heightImage, widthImage, fit || 'cover');
+    res.type('image/jpg').send(resultImage);
   }
 }

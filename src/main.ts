@@ -5,12 +5,13 @@ import {
 } from "@nestjs/platform-fastify";
 import { AppModule } from "./app.module";
 
-async function bootstrap() {
+async function startServer() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter()
+    // new FastifyAdapter(),
   );
+  app.enableCors({origin: true, allowedHeaders: ['Origin', 'X-Requested-With', 'Accept', 'Content-Type', 'Authorization'], methods: ['GET', 'PUT', 'OPTIONS', 'POST', 'DELETE']})
   await app.listen(3000);
 }
 
-bootstrap();
+startServer();
