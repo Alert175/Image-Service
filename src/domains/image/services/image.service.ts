@@ -37,8 +37,7 @@ export class ImageService {
             const resizedImage = await sharp(bufferImage).resize({
                 height,
                 width,
-                fit: fit === 'contain' ? sharp.fit.contain : sharp.fit.cover,
-                background: {r: 0, g: 0, b: 0, alpha: 0}
+                fit: fit === 'contain' ? sharp.fit.contain : sharp.fit.cover
             }).toBuffer()
             return resizedImage;
         } catch (e) {
