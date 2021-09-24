@@ -10,7 +10,16 @@ async function startServer() {
       AppModule,
       new FastifyAdapter()
   );
-  app.enableCors();
+  await app.enableCors({
+    origin: function (origin, callback) {
+      // if (!origin || whitelist.indexOf(origin) !== -1) {
+      //   callback(null, true)
+      // } else {
+      //   callback(new Error('Not allowed by CORS'))
+      // }
+      callback(null, true)
+    }
+  })
   await app.listen(3000);
 }
 
