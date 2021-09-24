@@ -8,12 +8,15 @@ export class ImageController {
 
   @Get()
   async getHello(@Query() query, @Res() res): Promise<string> {
-    const {url, h: heightImage, w: widthImage, fit} = query;
+    const {url, h: heightImage, w: widthImage, fit, b: blur} = query;
     if (!url) {
       res.status(404).send('not found');
       return;
     }
-    const resultImage = await this.imageService.getOptimizeImage(url, heightImage, widthImage, fit || 'cover');
-    res.type('image/jpg').send(resultImage);
+    const resultImageStream = await this.imageService.getOptimizeImage(url, heightImage, widthImage, fit || 'cover', blur);
+    res.set({
+      'Content-Type': 'application/pdf'
+    });
+    resultImageStream.pipe(res);
   }
 }
