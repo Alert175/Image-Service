@@ -22,7 +22,7 @@ export class ImageService {
             const {data} = responseImage;
             return data;
         } catch (e) {
-            console.error(e);
+            console.error('fail load image');
             return null;
         }
     }
@@ -69,11 +69,11 @@ export class ImageService {
      * @param fit
      * @param blurScale
      */
-    async getOptimizeImage(url: string, height: string, width: string, fit: string, blurScale: number): Promise<stream> {
+    async getOptimizeImage(url: string, height: string, width: string, fit: string, blurScale: number): Promise<stream | string> {
         try {
             let resultImageBuffer: Buffer = await ImageService.loadImage(url);
             if (!resultImageBuffer) {
-                return null;
+                return 'not found image';
             }
             /**
              * если передан размер изображение то обрезаю его
@@ -84,16 +84,21 @@ export class ImageService {
                     resultImageBuffer = resizeImageBuffer
                 }
             }
+            /**
+             * если передан данные для размытия, то картинка размывается
+             */
             if (!isNaN(Number(blurScale)) && Number(blurScale > 0.3) && Number(blurScale <= 1000)) {
                 const blurImageBuffer = await ImageService.blurImage(resultImageBuffer, Number(blurScale));
                 if (blurImageBuffer) {
                     resultImageBuffer = blurImageBuffer
                 }
             }
-            // @ts-ignore
-            // return `data:image/png;base64,${resultImageBuffer.toString('base64')}`;
+            /**
+             * создаю стрим для возврата на клиент
+             */
             const stream = new Readable();
             stream.push(resultImageBuffer);
+            stream.push(null);
             return stream;
         } catch (e) {
             console.error(e);
