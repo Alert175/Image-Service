@@ -26,7 +26,6 @@ export class ImageService {
             return null;
         }
     }
-
     /**
      * Статичный метод обрезания картинки
      * @param bufferImage
@@ -69,7 +68,7 @@ export class ImageService {
      * @param fit
      * @param blurScale
      */
-    async getOptimizeImage(url: string, height: string, width: string, fit: string, blurScale: number): Promise<stream | string> {
+    async getOptimizeImage(url: string, height: string, width: string, fit: string, blurScale: number): Promise<Buffer | string> {
         try {
             let resultImageBuffer: Buffer = await ImageService.loadImage(url);
             if (!resultImageBuffer) {
@@ -96,10 +95,11 @@ export class ImageService {
             /**
              * создаю стрим для возврата на клиент
              */
-            const stream = new Readable();
-            stream.push(resultImageBuffer);
-            stream.push(null);
-            return stream;
+            // const stream = new Readable();
+            // stream.push(resultImageBuffer);
+            // stream.push(null);
+            // return stream;
+            return resultImageBuffer;
         } catch (e) {
             console.error(e);
             return null;

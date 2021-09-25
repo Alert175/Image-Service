@@ -1,5 +1,6 @@
 import {Controller, Get, Query, Res, Header} from "@nestjs/common";
 import {ImageService} from "../services/image.service";
+import {Readable} from "stream";
 
 @Controller("/optimize")
 export class ImageController {
@@ -12,25 +13,27 @@ export class ImageController {
      * @param res
      */
     @Get()
-    // @Header('Access-Control-Allow-Origin', '*')
-    // @Header('Access-Control-Allow-Methods', 'GET')
+    @Header('Access-Control-Allow-Origin', '*')
     @Header('Content-Type', 'image/jpeg')
     async getHello(@Query() query, @Res() res): Promise<string> {
-        console.log('asd')
         const {url, h: heightImage, w: widthImage, fit, b: blur} = query;
         if (!url) {
             res.status(404).send('not found');
             return;
         }
-        const resultImageStream = await this.imageService.getOptimizeImage(url, heightImage, widthImage, fit || 'cover', blur);
-        if (!resultImageStream) {
+        const resultImageBuffer = await this.imageService.getOptimizeImage(url, heightImage, widthImage, fit || 'cover', blur);
+        if (!resultImageBuffer) {
             res.status(502).send('fail');
             return;
         }
-        if (resultImageStream === 'not found image') {
+        if (resultImageBuffer === 'not found image') {
             res.status(404).send('not found image');
             return;
         }
-        res.send(resultImageStream);
+        const stream = new Readable();
+        stream.push(resultImageBuffer);
+        stream.push(null);
+        stream.pipe(res);
+        // res.send(resultImageBuffer);
     }
 }
