@@ -1,8 +1,6 @@
 import {Injectable} from "@nestjs/common";
 import * as sharp from 'sharp';
 import axios from "axios";
-import { Readable } from 'stream';
-import stream from "node:stream";
 
 /**
  * Сервис работы с изображением
