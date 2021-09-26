@@ -38,8 +38,9 @@ export class ImageService {
             const resizedImage = await sharp(bufferImage).resize({
                 height,
                 width,
-                fit: fit === 'contain' ? sharp.fit.contain : sharp.fit.cover
-            }).toBuffer()
+                fit: fit === 'contain' ? sharp.fit.contain : sharp.fit.cover,
+                background: 'rgba(0, 0, 0, 0)'
+            }).png().toBuffer()
             return resizedImage;
         } catch (e) {
             console.error(e);
@@ -54,12 +55,26 @@ export class ImageService {
      */
     static async blurImage (bufferImage, scale: number) {
         try {
-            return await sharp(bufferImage).blur(scale).toBuffer();
+            return await sharp(bufferImage).blur(scale).png().toBuffer();
         } catch (e) {
             console.error(e);
             return null;
         }
     }
+
+    /**
+     *  Статичный метод конфертации изображения в webp формат
+     * @param bufferImage
+     */
+    static async convertToWebPImage (bufferImage) {
+        try {
+            return await sharp(bufferImage).webp().toBuffer();
+        } catch (e) {
+            console.error(e);
+            return null;
+        }
+    }
+
     /**
      * Метод загрузки изображения
      * @param url
@@ -67,38 +82,27 @@ export class ImageService {
      * @param width
      * @param fit
      * @param blurScale
+     * @param isWebp
      */
-    async getOptimizeImage(url: string, height: string, width: string, fit: string, blurScale: number): Promise<Buffer | string> {
+    async getOptimizeImage(url: string, height: string, width: string, fit: string, blurScale: number, isWebp: boolean): Promise<Buffer | string> {
         try {
             let resultImageBuffer: Buffer = await ImageService.loadImage(url);
-            if (!resultImageBuffer) {
-                return 'not found image';
-            }
-            /**
-             * если передан размер изображение то обрезаю его
-             */
+            if (!resultImageBuffer) return 'not found image';
+            // если передан размер изображение то обрезаю его
             if (!isNaN(Number(height)) && !isNaN(Number(width))) {
                 const resizeImageBuffer = await ImageService.resizeImage(resultImageBuffer, Number(height), Number(width), fit);
-                if (resizeImageBuffer) {
-                    resultImageBuffer = resizeImageBuffer
-                }
+                if (resizeImageBuffer) resultImageBuffer = resizeImageBuffer;
             }
-            /**
-             * если передан данные для размытия, то картинка размывается
-             */
+            // если передан данные для размытия, то картинка размывается
             if (!isNaN(Number(blurScale)) && Number(blurScale > 0.3) && Number(blurScale <= 1000)) {
                 const blurImageBuffer = await ImageService.blurImage(resultImageBuffer, Number(blurScale));
-                if (blurImageBuffer) {
-                    resultImageBuffer = blurImageBuffer
-                }
+                if (blurImageBuffer) resultImageBuffer = blurImageBuffer;
             }
-            /**
-             * создаю стрим для возврата на клиент
-             */
-            // const stream = new Readable();
-            // stream.push(resultImageBuffer);
-            // stream.push(null);
-            // return stream;
+            // если клиент поддерживает формат webp, то конвертирую в жанный формат
+            if (isWebp) {
+                const webpImageBuffer = await ImageService.convertToWebPImage(resultImageBuffer);
+                if (webpImageBuffer) resultImageBuffer = webpImageBuffer;
+            }
             return resultImageBuffer;
         } catch (e) {
             console.error(e);
